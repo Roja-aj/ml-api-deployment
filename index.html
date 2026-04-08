@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fraud Detection System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #7c3aed;
+      margin-bottom: 0.4rem;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .field input {
+      width: 100%;
+      background: #12151f;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      transition: border 0.2s;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: #7c3aed;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    .btn-predict {
+      background: #7c3aed;
+      color: white;
+      flex: 1;
+    }
+
+    .btn-fill-legit {
+      background: #064e3b;
+      color: #6ee7b7;
+      flex: 1;
+    }
+
+    .btn-fill-fraud {
+      background: #7f1d1d;
+      color: #fca5a5;
+      flex: 1;
+    }
+
+    .btn-clear {
+      background: #1e2130;
+      color: #94a3b8;
+      border: 1px solid #2d3148;
+    }
+
+    button:hover { opacity: 0.88; }
+
+    #result-box {
+      display: none;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 1.5rem;
+      border: 2px solid transparent;
+    }
+
+    #result-box.legit {
+      background: #052e16;
+      border-color: #16a34a;
+    }
+
+    #result-box.fraud {
+      background: #450a0a;
+      border-color: #dc2626;
+    }
+
+    #result-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #result-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    #result-sub {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .loading {
+      text-align: center;
+      color: #7c3aed;
+      padding: 1rem;
+      display: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #7c3aed44;
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .api-url {
+      font-size: 0.78rem;
+      color: #4b5563;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .api-url input {
+      background: #12151f;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      color: #6b7280;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      width: 100%;
+      max-width: 420px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🛡 Fraud Detection System</h1>
+    <p>Intelligent Self-Monitoring MLOps System — REVA University Mini Project</p>
+  </header>
+
+  <div class="card">
+    <h2>API Endpoint</h2>
+    <div class="api-url">
+      <input type="text" id="api-url" value="https://ml-api-deployment-06qg.onrender.com/predict" />
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Transaction Features</h2>
+    <div class="grid" id="fields-grid"></div>
+
+    <div class="btn-row">
+      <button class="btn-fill-legit" onclick="fillSample(0)">&#10003; Fill Legitimate Sample</button>
+      <button class="btn-fill-fraud" onclick="fillSample(1)">&#9888; Fill Fraud Sample</button>
+      <button class="btn-clear" onclick="clearFields()">Clear</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-predict" onclick="predict()">&#9654; Predict Transaction</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <span class="spinner"></span> Analyzing transaction...
+  </div>
+
+  <div id="result-box">
+    <div id="result-icon"></div>
+    <div id="result-title"></div>
+    <div id="result-sub"></div>
+  </div>
+
+</div>
+
+<script>
+  const FIELDS = [
+    "Time",
+    "V1","V2","V3","V4","V5","V6","V7","V8","V9","V10",
+    "V11","V12","V13","V14","V15","V16","V17","V18","V19","V20",
+    "V21","V22","V23","V24","V25","V26","V27","V28",
+    "Amount"
+  ];
+
+  const LEGIT = [0,-1.3598071336738,-0.0727811733098497,2.53634673796914,1.37815522427443,-0.338320769942518,0.462387777762292,0.239598554061257,0.0986979012610507,0.363786969611213,0.0907941719789316,-0.551599533260813,-0.617800855762348,-0.991389847235408,-0.311169353699174,1.46817697209427,-0.470400525259478,0.207971241929242,0.0257905801985591,0.403992960255733,0.251412098239705,-0.018306777944153,0.277837575558899,-0.110473910188767,0.0669280749146731,0.128539358273528,-0.189114843888824,0.133558376740387,-0.0210530534538215,149.62];
+
+  const FRAUD = [406,-3.0435406239976,-3.15730712090228,1.08846277997285,2.2886436183814,1.35980512966107,-1.06482252298131,0.325574266158614,-0.0677936531906277,-0.270952836212946,-0.838586564582682,-0.414575448285725,-0.503140859566552,0.676501544635863,-1.69202893305956,2.00063483909015,0.666779695901966,0.599717117642009,1.72532100745514,0.283344830149986,2.10233879259444,0.661695924400245,0.435477208966341,1.37596574254529,-0.293803152498322,0.279798031841214,-0.145361714815161,-0.252773122530705,0.0357642251788156,529.0];
+
+  const grid = document.getElementById('fields-grid');
+  FIELDS.forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'field';
+    div.innerHTML = `<label>${name}</label><input type="number" id="f_${name}" step="any" placeholder="0" />`;
+    grid.appendChild(div);
+  });
+
+  function fillSample(type) {
+    const data = type === 0 ? LEGIT : FRAUD;
+    FIELDS.forEach((name, i) => {
+      document.getElementById('f_' + name).value = data[i];
+    });
+  }
+
+  function clearFields() {
+    FIELDS.forEach(name => document.getElementById('f_' + name).value = '');
+    document.getElementById('result-box').style.display = 'none';
+  }
+
+  async function predict() {
+    const features = FIELDS.map(name => {
+      const val = document.getElementById('f_' + name).value;
+      return val === '' ? 0 : parseFloat(val);
+    });
+
+    const url = document.getElementById('api-url').value.trim();
+    const loading = document.getElementById('loading');
+    const resultBox = document.getElementById('result-box');
+
+    loading.style.display = 'block';
+    resultBox.style.display = 'none';
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ features })
+      });
+
+      const data = await response.json();
+      loading.style.display = 'none';
+
+      const prediction = data.prediction;
+      resultBox.style.display = 'block';
+
+      if (prediction === 0) {
+        resultBox.className = 'legit';
+        document.getElementById('result-icon').textContent = '✅';
+        document.getElementById('result-title').textContent = 'Legitimate Transaction';
+        document.getElementById('result-title').style.color = '#4ade80';
+        document.getElementById('result-sub').textContent = 'This transaction appears to be genuine. No fraud detected.';
+      } else {
+        resultBox.className = 'fraud';
+        document.getElementById('result-icon').textContent = '🚨';
+        document.getElementById('result-title').textContent = 'Fraudulent Transaction Detected!';
+        document.getElementById('result-title').style.color = '#f87171';
+        document.getElementById('result-sub').textContent = 'Warning: This transaction has been flagged as potentially fraudulent.';
+      }
+    } catch (err) {
+      loading.style.display = 'none';
+      resultBox.style.display = 'block';
+      resultBox.className = 'fraud';
+      document.getElementById('result-icon').textContent = '⚠️';
+      document.getElementById('result-title').textContent = 'Connection Error';
+      document.getElementById('result-title').style.color = '#f87171';
+      document.getElementById('result-sub').textContent = 'Could not reach the API. Make sure Render is running (it may be sleeping).';
+    }
+  }
+</script>
+</body>
+</html>

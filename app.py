@@ -1,5 +1,6 @@
 import joblib
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -41,7 +42,7 @@ class InputData(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "API is running"}
+    return FileResponse("index.html")   # ← changed this line
 
 @app.post("/predict")
 def predict(data: InputData):
