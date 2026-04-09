@@ -208,7 +208,7 @@
   <header>
     <div class="badge">MLOps · AI · Cloud</div>
     <h1>🛡 Fraud Detection System</h1>
-    <p>Intelligent Self-Monitoring MLOps System with Automatic Model Drift Detection and Retraining</p>
+    <p>Intelligent Self-Monitoring MLOps System</p>
   </header>
 
   <div class="card">
@@ -266,9 +266,10 @@
   }
 
   async function predict() {
-    const features = FIELDS.map(name => {
+    const body = {};
+    FIELDS.forEach(name => {
       const val = document.getElementById('f_' + name).value;
-      return val === '' ? 0 : parseFloat(val);
+      body[name] = val === '' ? 0 : parseFloat(val);
     });
     const url = document.getElementById('api-url').value.trim();
     const loading = document.getElementById('loading');
@@ -279,7 +280,7 @@
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ features })
+        body: JSON.stringify(body)
       });
       const data = await response.json();
       loading.style.display = 'none';
